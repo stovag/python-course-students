@@ -20,8 +20,8 @@ opponent_score = 0
 
 # network client
 client = None
-HOST_ADDR = "0.0.0.0"
-HOST_PORT = 8080
+HOST_ADDR = "oinoh"
+HOST_PORT = 4455
 
 
 top_welcome_frame = tk.Frame(window_main)
@@ -152,6 +152,9 @@ btn_paper.grid(row=0, column=1)
 btn_scissors.grid(row=0, column=2)
 button_frame.pack(side=tk.BOTTOM)
 
+my_choices = []
+opponent_choices = []
+game_outcomes = []
 
 def game_logic(you, opponent):
     winner = ""
@@ -163,6 +166,23 @@ def game_logic(you, opponent):
 
     # Complete the code
     # Find who is the winner
+    if you == opponent:
+        winner = "draw"
+    elif you == rock:
+        if opponent == paper:
+            winner = player1
+        else:
+            winner = player0
+    elif you == scissors:
+        if opponent == rock:
+            winner = player1
+        else:
+            winner = player0
+    elif you == paper:
+        if opponent == scissors:
+            winner = player1
+        else:
+            winner = player0
 
     return winner
 
@@ -294,6 +314,10 @@ def receive_message_from_server(sck, m):
             else:
                 round_result = "DRAW"
 
+            my_choices.append(your_choice)
+            opponent_choices.append(opponent_choice)
+            game_outcomes.append(round_result)
+
             # Update GUI
             lbl_opponent_choice["text"] = "Opponent choice: " + opponent_choice
             lbl_result["text"] = "Result: " + round_result
@@ -329,6 +353,13 @@ def receive_message_from_server(sck, m):
                 your_score = 0
                 opponent_score = 0
 
+            print(f'{my_choices=}')
+            print(f'{opponent_choices=}')
+            print(f'{game_outcomes=}')
+            print(f'Number of wins: {game_outcomes.count("WIN")}')
+            from collections import Counter
+            counts_of_opponent_choices = Counter(opponent_choices)
+            print(f'{counts_of_opponent_choices=}')
             # Start the timer
             threading._start_new_thread(count_down, (game_timer, ""))
 
