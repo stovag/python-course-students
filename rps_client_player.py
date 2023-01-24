@@ -15,4 +15,6 @@ class RPSClientPlayer:
         pass
 
     def next_move(self, round):
-        return random.choice(['rock', 'paper', 'scissors'])
+        my_choice = random.choice(['rock', 'paper', 'scissors'])
+
+        return my_choice

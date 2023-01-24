@@ -6,7 +6,6 @@ from rps_client import rps_client_main
 
 # Initialize parser
 parser = argparse.ArgumentParser()
-parser.parse_args()
 
 # Adding optional argument
 parser.add_argument("-a", "--Address", type=str, default='oinoh.ee.duth.gr', help="Server Address")
