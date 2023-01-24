@@ -2,7 +2,7 @@
 # https://www.geeksforgeeks.org/socket-programming-multi-threading-python/
 import argparse
 
-from assignment02.rps_game.rps_client import rps_client_main
+from rps_client import rps_client_main
 
 # Initialize parser
 parser = argparse.ArgumentParser()

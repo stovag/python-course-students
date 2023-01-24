@@ -1,7 +1,7 @@
 # Compute outcome
 import pickle
 
-from assignment02.rps_game.rps_messages import ServerMsgRoundStart, ServerMsgDuelReadyToStart, ServerMsgRoundResult, \
+from rps_messages import ServerMsgRoundStart, ServerMsgDuelReadyToStart, ServerMsgRoundResult, \
     ServerMsgExitClient, ServerMsgPrepareForNextRound
 
 

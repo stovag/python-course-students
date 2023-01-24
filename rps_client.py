@@ -1,16 +1,14 @@
 # Client sketch from
 # https://www.geeksforgeeks.org/socket-programming-multi-threading-python/
-import argparse
 # Import socket module
 import socket
 import pickle
-import random
 
-from assignment02.rps_game.rps_client_player import RPSClientPlayer
-from assignment02.rps_game.rps_messages import ClientMsgHello, ClientMsgExitServer, ServerMsgDuelReadyToStart, \
+from rps_client_player import RPSClientPlayer
+from rps_messages import ClientMsgHello, ServerMsgDuelReadyToStart, \
     ServerMsgRoundStart, ClientMsgRoundMove, ServerMsgRoundResult, \
     ServerMsgExitClient, ClientMsgOK, ServerMsgPrepareForNextRound
-from assignment02.rps_game.rps_messages import ServerMsgHello
+
 
 def rps_client_main(server_host, server_port):
     rps_client_player = RPSClientPlayer()

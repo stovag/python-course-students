@@ -6,14 +6,12 @@ import socket
 import pickle
 
 # import thread module
-from _thread import *
 import threading
 
 import argparse
 
-from assignment02.rps_game.rps_client import rps_client_main
-from assignment02.rps_game.rps_messages import ServerMsgHello, ClientMsgHello, ServerMsgExitClient, ServerMsgRoundStart, \
-    ServerMsgDuelReadyToStart, ServerMsgRoundResult
+from rps_client import rps_client_main
+from rps_messages import ServerMsgHello, ClientMsgHello, ServerMsgExitClient
 from rps_server_worker import serve_duel
 
 # Initialize parser
