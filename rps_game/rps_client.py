@@ -4,14 +4,18 @@
 import socket
 import pickle
 
-from rps_client_player import RPSClientPlayer
-from rps_messages import ClientMsgHello, ServerMsgDuelReadyToStart, \
+from rps_game.rps_client_player import RPSPlayer
+from rps_game.rps_client_my_player import RPSMyPlayer
+from rps_game.rps_client_custom_players import *
+from rps_game.rps_messages import ClientMsgHello, ServerMsgDuelReadyToStart, \
     ServerMsgRoundStart, ClientMsgRoundMove, ServerMsgRoundResult, \
     ServerMsgExitClient, ClientMsgOK, ServerMsgPrepareForNextRound
 
 
-def rps_client_main(server_host, server_port):
-    rps_client_player = RPSClientPlayer()
+def rps_client_main(server_host, server_port, player_class_name):
+    # rps_client_player = RPSClientPlayer()
+    klass = globals()[player_class_name]
+    rps_client_player = klass()
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
@@ -39,16 +43,11 @@ def rps_client_main(server_host, server_port):
 
     print(f'Received from the server : {server_msg}')
     my_id = server_msg.client_id
-
     print(f'My id is: {my_id}')
 
-    # s.send(client_name.encode())
-    #
-    # data = s.recv(1024)
-    # client_id = int(data.decode())
-    #
-    # print(f'{client_id}')
+    rps_client_player.initialize(my_id)
 
+    # Wait for duel start message
     data = s.recv(1024)
     server_msg = pickle.loads(data)
 
@@ -74,13 +73,15 @@ def rps_client_main(server_host, server_port):
         s.send(data)
 
         rdata = s.recv(1024)
-        server_msg = pickle.loads(rdata)
-        assert isinstance(server_msg, ServerMsgRoundResult)
-        print(f'Result: {server_msg.result}')
+        round_result = pickle.loads(rdata)
+        assert isinstance(round_result, ServerMsgRoundResult)
+        print(f'Result: {round_result.result}')
 
         client_OK = ClientMsgOK('Received server round result')
         data = pickle.dumps(client_OK)
         s.send(data)
+
+        rps_client_player.game_result(round, round_result.player_one_id, round_result.player_one_move, round_result.player_two_id, round_result.player_two_move, round_result.result)
 
         rdata = s.recv(1024)
         server_msg = pickle.loads(rdata)

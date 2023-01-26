@@ -68,10 +68,12 @@ class ClientMsgOK:
         return f'ClientMsgOK: {self.msg}'
 
 class ServerMsgRoundResult:
-    def __init__(self, player_one_id, player_two_id, result):
+    def __init__(self, player_one_id, player_one_move, player_two_id, player_two_move, result):
         self.player_one_id = player_one_id
+        self.player_one_move = player_one_move
         self.player_two_id = player_two_id
+        self.player_two_move = player_two_move
         self.result = result
 
     def __str__(self):
-        return f'ServerMsgRoundResult: {self.player_one_id}, {self.player_two_id}, {self.result}'
+        return f'ServerMsgRoundResult: {self.player_one_id}, {self.player_one_move}, {self.player_two_id}, {self.player_two_move}, {self.result}'

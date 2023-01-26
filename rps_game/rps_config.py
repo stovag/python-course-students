@@ -1,0 +1,5 @@
+RPS_VERSION = '0.2'
+DEFAULT_SERVER_PORT = 4455
+DEFAULT_SERVER_BOT_MODE = False
+DEFAULT_SERVER_ADDRESS = 'oinoh.ee.duth.gr'
+POSSIBLE_MOVES = ['rock', 'paper', 'scissors']
