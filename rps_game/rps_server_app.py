@@ -6,13 +6,14 @@ sys.path.append(parentdir)
 import argparse
 
 from rps_game.rps_config import RPS_VERSION
+from rps_game.rps_config import DEFAULT_SERVER_PORT
 from rps_game.rps_server import rps_server_main
 
 # Initialize parser
 parser = argparse.ArgumentParser()
 
 # Adding optional argument
-parser.add_argument("-p", "--Port", type=int, default='4455', help="Server Listener Port")
+parser.add_argument("-p", "--Port", type=int, default=DEFAULT_SERVER_PORT, help="Server Listener Port")
 parser.add_argument("-r", "--Rounds", type=int, default=5, help="Number of game rounds")
 parser.add_argument("-b", "--Bot", action='store_true', default=False, help="Clients play against bot")
 parser.add_argument("-c", "--PlayerClass", type=str, default='RPSSimpleBotPlayer', help="Client player class for bot (for bot mode of server)")

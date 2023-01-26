@@ -9,13 +9,15 @@ import argparse
 
 from rps_game.rps_client import rps_client_main
 from rps_game.rps_config import RPS_VERSION
+from rps_game.rps_config import DEFAULT_SERVER_ADDRESS
+from rps_game.rps_config import DEFAULT_SERVER_PORT
 
 # Initialize parser
 parser = argparse.ArgumentParser()
 
 # Adding optional argument
-parser.add_argument("-a", "--Address", type=str, default='oinoh.ee.duth.gr', help="Server Address")
-parser.add_argument("-p", "--Port", type=int, default='4455', help="Server Port")
+parser.add_argument("-a", "--Address", type=str, default=DEFAULT_SERVER_ADDRESS, help="Server Address")
+parser.add_argument("-p", "--Port", type=int, default=DEFAULT_SERVER_PORT, help="Server Port")
 parser.add_argument("-c", "--PlayerClass", type=str, default='RPSMyPlayer', help="Client Player class")
 
 # Read arguments from command line
