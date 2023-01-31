@@ -5,7 +5,7 @@ import socket
 import pickle
 
 from rps_game.rps_client_player import RPSPlayer
-from rps_game.rps_client_my_player import RPSMyPlayer
+from rps_game.rps_client_my_player import *
 from rps_game.rps_client_custom_players import *
 from rps_game.rps_config import RPS_VERSION
 from rps_game.rps_messages import ClientMsgHello, ServerMsgDuelReadyToStart, \
