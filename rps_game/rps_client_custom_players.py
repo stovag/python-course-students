@@ -1,4 +1,5 @@
 import random
+from collections import Counter
 
 from rps_game.rps_client_player import RPSPlayer
 from rps_game.rps_config import POSSIBLE_MOVES
@@ -18,7 +19,7 @@ class RPSSimpleBotPlayer(RPSPlayer):
         self.my_biased_moves = POSSIBLE_MOVES.copy()
         move = random.choice(POSSIBLE_MOVES)
         # Play twice as often the move {move}
-        self.my_biased_moves.append(move)
+        self.my_biased_moves += 2 * [move]
         print(self.my_biased_moves)
 
     def game_result(self, round, player_one_id, player_one_move, player_two_id, player_two_move, winner):
@@ -28,3 +29,4 @@ class RPSSimpleBotPlayer(RPSPlayer):
 
     def next_move(self, round):
         return random.choice(self.my_biased_moves)
+

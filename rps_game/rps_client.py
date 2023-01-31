@@ -7,95 +7,125 @@ import pickle
 from rps_game.rps_client_player import RPSPlayer
 from rps_game.rps_client_my_player import RPSMyPlayer
 from rps_game.rps_client_custom_players import *
+from rps_game.rps_config import RPS_VERSION
 from rps_game.rps_messages import ClientMsgHello, ServerMsgDuelReadyToStart, \
     ServerMsgRoundStart, ClientMsgRoundMove, ServerMsgRoundResult, \
-    ServerMsgExitClient, ClientMsgOK, ServerMsgPrepareForNextRound
+    ServerMsgExitClient, ClientMsgOK, ServerMsgPrepareForNextRound, ClientMsgExitServer, \
+    ServerMsgRejectClientConnection, ServerMsgHello
 
 
-def rps_client_main(server_host, server_port, player_class_name):
+def rps_client_main(server_host, server_port, player_class_name, i_am_a_bot, logger, timeouts, send_server_exit_msg = False):
     # rps_client_player = RPSClientPlayer()
     klass = globals()[player_class_name]
     rps_client_player = klass()
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
-    print(f'Trying to connect to {server_host} on port {server_port} ...')
+    logger.info(f'Trying to connect to {server_host} on port {server_port} ...')
     # connect to server
     s.connect((server_host, server_port))
+    s.settimeout(timeouts)
 
     # message you send to server
     message = "Hello from client"
 
-    client_hello = ClientMsgHello(rps_client_player.name, rps_client_player.version)
-    data = pickle.dumps(client_hello)
+    if send_server_exit_msg:
+        print(f'Sending exit message to server {server_host} {server_port}')
+        send_exit = ClientMsgExitServer(f'Exit message from client {rps_client_player.name}', 0)
+        data = pickle.dumps(send_exit)
+        s.send(data)
+    else:
+        client_hello = ClientMsgHello(rps_client_player.name, rps_client_player.version, i_am_a_bot, RPS_VERSION)
+        data = pickle.dumps(client_hello)
 
-    # msg_exit = MsgExit(0, "test exit")
-    # data = pickle.dumps(msg_exit)
+        # msg_exit = MsgExit(0, "test exit")
+        # data = pickle.dumps(msg_exit)
 
-    s.send(data)
-
-    # message received from server
-    data = s.recv(1024)
-
-    server_msg = pickle.loads(data)
-    # print the received message
-    # here it would be a reverse of sent message
-
-    print(f'Received from the server : {server_msg}')
-    my_id = server_msg.client_id
-    print(f'My id is: {my_id}')
-
-    rps_client_player.initialize(my_id)
-
-    # Wait for duel start message
-    data = s.recv(1024)
-    server_msg = pickle.loads(data)
-
-    assert isinstance(server_msg, ServerMsgDuelReadyToStart)
-    print(f'Received from the server : {server_msg}')
-    client_OK = ClientMsgOK('Received duel ready to start')
-    data = pickle.dumps(client_OK)
-    s.send(data)
-
-    game_ended = False
-    while not game_ended:
-        rdata = s.recv(1024)
-        server_msg = pickle.loads(rdata)
-        assert isinstance(server_msg, ServerMsgRoundStart)
-
-        round = server_msg.round_num
-
-        print(f'Received from the server : {server_msg}')
-        move = rps_client_player.next_move(round)
-        msg_move = ClientMsgRoundMove(move)
-        data = pickle.dumps(msg_move)
-        print(f'Sending to server : {msg_move}')
         s.send(data)
 
-        rdata = s.recv(1024)
-        round_result = pickle.loads(rdata)
-        assert isinstance(round_result, ServerMsgRoundResult)
-        print(f'Result: {round_result.result}')
+        # message received from server
+        data = s.recv(1024)
+        server_msg = pickle.loads(data)
+        # print the received message
+        # here it would be a reverse of sent message
 
-        client_OK = ClientMsgOK('Received server round result')
-        data = pickle.dumps(client_OK)
-        s.send(data)
+        logger.info(f'Received from the server : {server_msg}')
 
-        rps_client_player.game_result(round, round_result.player_one_id, round_result.player_one_move, round_result.player_two_id, round_result.player_two_move, round_result.result)
-
-        rdata = s.recv(1024)
-        server_msg = pickle.loads(rdata)
-        print(server_msg)
-
-        if isinstance(server_msg, ServerMsgPrepareForNextRound):
-            print(f'Preparing for next round: {server_msg.round_num}')
-        elif isinstance(server_msg, ServerMsgExitClient):
-            print(f'Exit command from server: {server_msg}')
-            print(f'Exiting ...')
-            game_ended = True
+        if isinstance(server_msg, ServerMsgRejectClientConnection):
+            logger.error(f'Connection rejected by server with msg: {server_msg.msg}')
         else:
-            raise ("Unexpected server msg type")
+            assert isinstance(server_msg, ServerMsgHello)
+            my_id = server_msg.client_id
+            logger.info(f'My id is: {my_id}')
 
-    s.close()
+            rps_client_player.initialize(my_id)
+
+            # Wait for duel start message
+            data = s.recv(1024)
+            server_msg = pickle.loads(data)
+
+            assert isinstance(server_msg, ServerMsgDuelReadyToStart)
+            logger.info(f'Received from the server : {server_msg}')
+            client_OK = ClientMsgOK('Received duel ready to start')
+            data = pickle.dumps(client_OK)
+            s.send(data)
+
+            game_ended = False
+            game_rounds_counter = 0
+            while not game_ended:
+                logger.info(f'Waiting for round start from server')
+                rdata = s.recv(1024)
+                server_msg = pickle.loads(rdata)
+                assert isinstance(server_msg, ServerMsgRoundStart)
+
+                round = server_msg.round_num
+
+                logger.info(f'Received from the server : {server_msg}')
+                move = rps_client_player.next_move(round)
+                msg_move = ClientMsgRoundMove(move)
+                data = pickle.dumps(msg_move)
+                logger.info(f'Sending to server : {msg_move}')
+                s.send(data)
+                game_rounds_counter += 1
+
+                rdata = s.recv(1024)
+                round_result = pickle.loads(rdata)
+                assert isinstance(round_result, ServerMsgRoundResult)
+                logger.info(f'Result: {round_result.result}')
+
+                client_OK = ClientMsgOK('Received server round result')
+                data = pickle.dumps(client_OK)
+                s.send(data)
+
+                rps_client_player.game_result(round, round_result.player_one_id, round_result.player_one_move, round_result.player_two_id, round_result.player_two_move, round_result.result)
+
+                rdata = s.recv(1024)
+                server_msg = pickle.loads(rdata)
+                logger.info(server_msg)
+
+                if isinstance(server_msg, ServerMsgPrepareForNextRound):
+                    logger.info(f'Preparing for next round: {server_msg.round_num}')
+                    client_OK = ClientMsgOK('Received preparing for next round')
+                    data = pickle.dumps(client_OK)
+                    s.send(data)
+                elif isinstance(server_msg, ServerMsgExitClient):
+                    logger.info(f'Played {game_rounds_counter} game rounds')
+                    print(f'Played {game_rounds_counter} game rounds')
+                    print(f'Game summary: {server_msg.counters}')
+                    for k in server_msg.counters:
+                        if k == my_id:
+                            print(f'W: {server_msg.counters[k]}')
+                        elif k == -1:
+                            print(f'D: {server_msg.counters[k]}')
+                        else:
+                            print(f'L: {server_msg.counters[k]}')
+                    logger.info(f'Exit command from server: {server_msg}, exiting ...')
+                    print(f'Exit command from server. Exiting ...')
+                    game_ended = True
+                else:
+                    logger.error(f'Unexpected server msg type {server_msg}')
+                    raise ("Unexpected server msg type")
+
+        s.close()
 
 

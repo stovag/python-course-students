@@ -1,9 +1,10 @@
 # Compute outcome
 import pickle
 from collections import Counter
+from datetime import datetime
 
 from rps_game.rps_messages import ServerMsgRoundStart, ServerMsgDuelReadyToStart, ServerMsgRoundResult, \
-    ServerMsgExitClient, ServerMsgPrepareForNextRound
+    ServerMsgExitClient, ServerMsgPrepareForNextRound, ClientMsgHello, ServerMsgHello
 
 
 def game_logic(client_list, client_moves):
@@ -35,8 +36,16 @@ def game_logic(client_list, client_moves):
             winner = id0
     return winner
 
-def serve_duel(duel_client_list, game_rounds):
+# srv_msg = "You are connected to the server!"
+# c.send(srv_msg.encode())
+#
+# data = c.recv(1024)
+# client_name = data.decode()
+# print_lock.acquire()
+# print(f'{client_name=}')
+# print_lock.release()
 
+def serve_duel(duel_client_list, game_rounds, logger):
     # Inform clients that the duel is ready to start
     for client in duel_client_list:
         duel_ready_msg = ServerMsgDuelReadyToStart()
@@ -44,31 +53,32 @@ def serve_duel(duel_client_list, game_rounds):
         client.socket.send(data)
         data = client.socket.recv(1024)
         client_OK = pickle.loads(data)
-        print(f'Received: {client_OK} from {client}')
+        logger.info(f'Received: {client_OK} from {client}')
 
     # Store the winner of each round
     player_one_moves = []
     player_two_moves = []
     game_outcomes = []
 
+    print(datetime.now())
     # Play a game
     for rps_round in range(game_rounds):
         for client in duel_client_list:
             play_game_msg = ServerMsgRoundStart(rps_round)
             data = pickle.dumps(play_game_msg)
             client.socket.send(data)
-            print(f'Sending ServerMsgRoundStart to {client}')
+            logger.info(f'Sending ServerMsgRoundStart to {client}')
 
         # Receive the move of each client
         client_moves = []
 
         for client in duel_client_list:
-            print(f'Waiting for the move of {client}')
+            logger.info(f'Waiting for the move of {client}')
             data = client.socket.recv(1024)
             client_move_msg = pickle.loads(data)
             client_moves.append(client_move_msg)
             move = client_move_msg.move
-            print(f'Received: {client_move_msg}')
+            logger.info(f'Received: {client_move_msg}')
 
         winner = game_logic(duel_client_list, client_moves)
         round_result_msg = ServerMsgRoundResult(duel_client_list[0].client_id, client_moves[0].move, duel_client_list[1].client_id, client_moves[1].move, winner)
@@ -81,13 +91,13 @@ def serve_duel(duel_client_list, game_rounds):
         for client in duel_client_list:
             data = pickle.dumps(round_result_msg)
             client.socket.send(data)
-            print(f'Sending Round result to {client}')
+            logger.info(f'Sending Round result to {client}')
 
         # Send the outcome
         for client in duel_client_list:
             data = client.socket.recv(1024)
             client_result_msg = pickle.loads(data)
-            print(f'Received: {client_result_msg}')
+            logger.info(f'Received: {client_result_msg}')
 
         if rps_round < game_rounds-1:
             for client in duel_client_list:
@@ -95,10 +105,15 @@ def serve_duel(duel_client_list, game_rounds):
                 data = pickle.dumps(exit_msg)
                 client.socket.send(data)
                 print(f'Sending prepare for next round {rps_round+1} msg to {client}')
+            for client in duel_client_list:
+                data = client.socket.recv(1024)
+                client_OK_msg = pickle.loads(data)
+                logger.info(f'Received: {client_OK_msg}')
         else:
             # Terminate clients
+            counts_of_game_outcomes = Counter(game_outcomes)
             for client in duel_client_list:
-                exit_msg = ServerMsgExitClient(client.client_id, "Exit")
+                exit_msg = ServerMsgExitClient(client.client_id, "Exit", counts_of_game_outcomes)
                 data = pickle.dumps(exit_msg)
                 client.socket.send(data)
                 print(f'Sending Exit msg to {client}')
@@ -110,3 +125,4 @@ def serve_duel(duel_client_list, game_rounds):
     print(f'{counts_of_player_two_moves=}')
     counts_of_game_outcomes = Counter(game_outcomes)
     print(f'{counts_of_game_outcomes=}')
+    print(datetime.now())
