@@ -104,7 +104,7 @@ def serve_duel(duel_client_list, game_rounds, logger):
                 exit_msg = ServerMsgPrepareForNextRound(rps_round+1)
                 data = pickle.dumps(exit_msg)
                 client.socket.send(data)
-                print(f'Sending prepare for next round {rps_round+1} msg to {client}')
+                logger.info(f'Sending prepare for next round {rps_round+1} msg to {client}')
             for client in duel_client_list:
                 data = client.socket.recv(1024)
                 client_OK_msg = pickle.loads(data)

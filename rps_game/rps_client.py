@@ -112,13 +112,17 @@ def rps_client_main(server_host, server_port, player_class_name, i_am_a_bot, log
                     logger.info(f'Played {game_rounds_counter} game rounds')
                     print(f'Played {game_rounds_counter} game rounds')
                     print(f'Game summary: {server_msg.counters}')
+                    outcome_counters = {'W': 0, 'D': 0, 'L': 0}
                     for k in server_msg.counters:
                         if k == my_id:
-                            print(f'W: {server_msg.counters[k]}')
+                            outcome_counters['W'] = server_msg.counters[k]
                         elif k == -1:
-                            print(f'D: {server_msg.counters[k]}')
+                            outcome_counters['D'] = server_msg.counters[k]
                         else:
-                            print(f'L: {server_msg.counters[k]}')
+                            outcome_counters['L'] = server_msg.counters[k]
+                    print(f"W: {outcome_counters['W']}")
+                    print(f"D: {outcome_counters['D']}")
+                    print(f"L: {outcome_counters['L']}")
                     logger.info(f'Exit command from server: {server_msg}, exiting ...')
                     print(f'Exit command from server. Exiting ...')
                     game_ended = True
