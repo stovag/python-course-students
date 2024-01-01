@@ -37,7 +37,7 @@ class Client:
 # in our case it is 12345 but it
 # can be anything
 
-def serve_new_client_connection(c, client_id, client_list, client_bot_list, server_name, port, clients_play_against_bot, player_class_name, game_rounds, logger, timeouts):
+def serve_new_client_connection(c, client_id, client_list, client_bot_list, server_name, port, clients_play_against_bot, player_class_name, game_rounds, logger, timeouts, timestamp):
     data = c.recv(1024)
     # client_name = c.recv(1024)
     client_msg = pickle.loads(data)
@@ -98,7 +98,7 @@ def rps_server_create_duel(c, client_id, client_list, client_bot_list, server_na
                 server_worker = threading.Thread(target=serve_duel, args=(duel_client_list, game_rounds, logger))
                 server_worker.start()
             else:
-                client_bot = threading.Thread(target=rps_client_main, args=('127.0.0.1', port, player_class_name, True, logger, timeouts))
+                client_bot = threading.Thread(target=rps_client_main, args=('127.0.0.1', port, player_class_name, True, logger, timeouts, ""))
                 client_bot.start()
     else:
         # Clients play in duels
@@ -148,7 +148,8 @@ def rps_server_main(server_name, port, clients_play_against_bot, player_class_na
             logger.info('Connected to :', addr[0], ':', addr[1])
 
             # serve_new_client_connection( c, client_id, client_list, client_bot_list, server_name, port, clients_play_against_bot, player_class_name, game_rounds, logger, timeouts)
-            server_new_connection_thread = threading.Thread(target=serve_new_client_connection, args=(c, client_id, client_list, client_bot_list, server_name, port, clients_play_against_bot, player_class_name, game_rounds, logger, timeouts))
+            timestamp = ""
+            server_new_connection_thread = threading.Thread(target=serve_new_client_connection, args=(c, client_id, client_list, client_bot_list, server_name, port, clients_play_against_bot, player_class_name, game_rounds, logger, timeouts, ""))
             client_id += 1
             server_new_connection_thread.start()
         except socket.timeout:

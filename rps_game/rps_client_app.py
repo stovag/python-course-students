@@ -1,4 +1,5 @@
 import os, sys
+from datetime import datetime as dt
 currentdir = os.path.dirname(os.path.realpath(__file__))
 parentdir = os.path.dirname(currentdir)
 sys.path.append(parentdir)
@@ -44,6 +45,9 @@ verbose = args.Verbose
 timeouts = args.Timeouts
 send_exit = args.ExitServer
 
+# Get timestamp for current run
+timestamp = dt.now().strftime("%m%d%Y_%H%M%S")
+
 if verbose:
     logger.setLevel(logging.DEBUG)
 else:
@@ -54,4 +58,4 @@ print(f'RPS Client v{RPS_VERSION} started, {server_host} {server_port} {player_c
 logger.info('Log Info message')
 
 # Run the client
-rps_client_main(server_host, server_port, player_class_name, False, logger, timeouts, send_exit)
+rps_client_main(server_host, server_port, player_class_name, False, logger, timeouts, timestamp, send_exit)
