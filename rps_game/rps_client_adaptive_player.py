@@ -81,12 +81,8 @@ class RPSMyAdaptivePlayer(RPSPlayer):
         If bias changes are detected (minimum bias below `bias_low_limit` and not the maximum bias), the player adjusts its strategy.
         If no obvious bias is detected, the player picks a move based on frequencies.
         For the first 25 rounds, the player selects random moves.
-
-        Example:
-        >>> player = RPSMyAdaptivePlayer()
-        >>> player.next_move(30)
         """
-        
+
         bias = self.get_bot_bias()
         if bias is not None:
             # If a move shows up more than 50% -> select its counter move
@@ -121,10 +117,6 @@ class RPSMyAdaptivePlayer(RPSPlayer):
         Note:
         This method assumes the existence of a constant POSSIBLE_MOVES list and requires external game log data
         stored in a 'logs/result_log.csv' file. The calculation considers the last `window` rounds of the log.
-
-        Example:
-        >>> player = RPSMyAdaptivePlayer()
-        >>> player.get_bot_bias()
         """
         rounds_df = pd.read_csv(f"logs/result_log.csv").tail(self.window)
         bot_choices = rounds_df['b_choice'].value_counts(normalize=True) * 100
