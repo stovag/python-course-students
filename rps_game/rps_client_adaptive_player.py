@@ -22,7 +22,10 @@ class RPSMyAdaptivePlayer(RPSPlayer):
     - self_id (int): The player's unique identifier.
     - opponent_moves (list): A list to store the opponent's moves.
     - current_bias (str): The move that the player currently biases towards.
-
+    - bias_high_limit (int): The threshold for considering a bias as high, used in move selection.
+    - bias_low_limit (int): The threshold for considering a bias as low, used in move selection.
+    - window (int): The number of recent game rounds used to calculate bias.
+    
     Methods:
     - __init__(): Initializes the player with default values and counter-move dictionary.
     - __str__(): Returns a string representation of the player.
@@ -62,6 +65,28 @@ class RPSMyAdaptivePlayer(RPSPlayer):
         pass
 
     def next_move(self, round):
+        """
+        Determine the player's next move based on observed biases or random selection.
+
+        Args:
+        - round (int): The current round of the game.
+
+        Returns:
+        - str: The selected move for the current round.
+
+        Note:
+        This method uses the frequency bias calculated from the player's recent game rounds to adjust its strategy.
+        If a move shows up more than `bias_high_limit`%, the player selects its counter move.
+        If no moves have a frequency greater than or equal to `bias_high_limit`, the player checks for bias changes.
+        If bias changes are detected (minimum bias below `bias_low_limit` and not the maximum bias), the player adjusts its strategy.
+        If no obvious bias is detected, the player picks a move based on frequencies.
+        For the first 25 rounds, the player selects random moves.
+
+        Example:
+        >>> player = RPSMyAdaptivePlayer()
+        >>> player.next_move(30)
+        """
+        
         bias = self.get_bot_bias()
         if bias is not None:
             # If a move shows up more than 50% -> select its counter move
@@ -87,6 +112,20 @@ class RPSMyAdaptivePlayer(RPSPlayer):
     
     # Calculate the frequency of each move from the bot from current logs
     def get_bot_bias(self):
+        """
+        Calculate the frequency of each move from the player's recent game rounds.
+
+        Returns:
+        - pandas.Series: A Series containing move frequencies as percentages.
+
+        Note:
+        This method assumes the existence of a constant POSSIBLE_MOVES list and requires external game log data
+        stored in a 'logs/result_log.csv' file. The calculation considers the last `window` rounds of the log.
+
+        Example:
+        >>> player = RPSMyAdaptivePlayer()
+        >>> player.get_bot_bias()
+        """
         rounds_df = pd.read_csv(f"logs/result_log.csv").tail(self.window)
         bot_choices = rounds_df['b_choice'].value_counts(normalize=True) * 100
         # Check if any movces are missing eg: the bot didn't make any rock moves in the last 25 rounds.
