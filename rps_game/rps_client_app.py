@@ -45,8 +45,6 @@ verbose = args.Verbose
 timeouts = args.Timeouts
 send_exit = args.ExitServer
 
-# Get timestamp for current run
-timestamp = dt.now().strftime("%m%d%Y_%H%M%S")
 
 if verbose:
     logger.setLevel(logging.DEBUG)
@@ -58,4 +56,4 @@ print(f'RPS Client v{RPS_VERSION} started, {server_host} {server_port} {player_c
 logger.info('Log Info message')
 
 # Run the client
-rps_client_main(server_host, server_port, player_class_name, False, logger, timeouts, timestamp, send_exit)
+rps_client_main(server_host, server_port, player_class_name, False, logger, timeouts, send_exit)

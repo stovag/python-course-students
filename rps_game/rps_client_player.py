@@ -12,7 +12,7 @@ class RPSPlayer:
     def __str__(self):
         return f'Client player {self.name} {self.version} {self.id}'
 
-    def initialize(self, id, timestamp):
+    def initialize(self, id):
         self.id = id
 
     def game_result(self, round, player_one_id, player_one_move, player_two_id, player_two_move, winner):

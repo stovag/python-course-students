@@ -10,6 +10,7 @@ import pandas as pd
 from rps_game.rps_client_player import RPSPlayer
 from rps_game.rps_client_my_player import *
 from rps_game.rps_client_custom_players import *
+from rps_game.rps_client_adaptive_player import *
 from rps_game.rps_config import RPS_VERSION
 from rps_game.rps_messages import (
     ClientMsgHello,
@@ -33,7 +34,6 @@ def rps_client_main(
     i_am_a_bot,
     logger,
     timeouts,
-    timestamp,
     send_server_exit_msg=False,
 ):
     # rps_client_player = RPSClientPlayer()
@@ -63,7 +63,7 @@ def rps_client_main(
     }
     if player_class_name != "RPSSimpleBotPlayer":
         df_logs = pd.DataFrame.from_dict(logging_dict)
-        df_logs.to_csv(f"logs/result_log_{timestamp}.csv", mode="w", index=False)
+        df_logs.to_csv(f"logs/result_log.csv", mode="w", index=False)
 
 
     if send_server_exit_msg:
@@ -99,7 +99,7 @@ def rps_client_main(
             my_id = server_msg.client_id
             logger.info(f"My id is: {my_id}")
             print(f"My id is: {my_id}")
-            rps_client_player.initialize(my_id, timestamp)
+            rps_client_player.initialize(my_id)
 
             # Wait for duel start message
             data = s.recv(1024)
@@ -163,7 +163,7 @@ def rps_client_main(
                     for data in log_result:
                         msg_data += f"{data},"
                     msg_data = msg_data[:-1]+"\n"
-                    with open(f'logs/result_log_{timestamp}.csv', 'a', encoding='UTF-8') as the_file:
+                    with open(f'logs/result_log.csv', 'a', encoding='UTF-8') as the_file:
                         the_file.write(msg_data)
 
                 rdata = s.recv(1024)
@@ -196,8 +196,6 @@ def rps_client_main(
                     logger.info(f"Exit command from server: {server_msg}, exiting ...")
                     print("Exit command from server. Exiting ...")
                     game_ended = True
-                    # timestamp = dt.now().strftime("%m%d%Y_%H%M%S")
-                    # df_logs.to_csv(f"logs/result_log_{timestamp}.csv", mode="a", header=False)
                 else:
                     logger.error(f"Unexpected server msg type {server_msg}")
                     raise Exception("Unexpected server msg type")
